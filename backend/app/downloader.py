@@ -1,7 +1,4 @@
-"""Todo lo que habla con yt-dlp vive aquí.
-
-Si algún día cambias yt-dlp por otra cosa, solo tocas este archivo.
-"""
+"""Todo lo que habla con yt-dlp vive aquí."""
 import os
 import shutil
 import tempfile
@@ -11,23 +8,31 @@ import yt_dlp
 
 HAS_FFMPEG = shutil.which("ffmpeg") is not None
 
-# Cookies opcionales (Instagram a veces las pide). Pon la ruta en COOKIES_FILE.
+# Cookies opcionales para contenido logueado. Ruta en COOKIES_FILE.
 COOKIES_FILE = os.getenv("COOKIES_FILE")
 
-# Cada opción de descarga que ve el usuario se traduce a un "format" de yt-dlp.
-# Con ffmpeg se pueden juntar video y audio separados (YouTube los da así);
-# sin ffmpeg nos quedamos con archivos que ya traen las dos cosas.
+# TikTok marca con "download" el id de su copia con marca de agua.
+NO_WATERMARK = "[format_id!*=download]"
+
 FORMATS = {
     "hd": {
         "label": "Video HD",
         "sub": "MP4, sin marca de agua",
-        "selector": "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/b" if HAS_FFMPEG else "b[ext=mp4]/b",
+        "selector": (
+            f"bv*{NO_WATERMARK}[ext=mp4]+ba[ext=m4a]/b{NO_WATERMARK}[ext=mp4]/b{NO_WATERMARK}/b"
+            if HAS_FFMPEG
+            else f"b{NO_WATERMARK}[ext=mp4]/b{NO_WATERMARK}/b"
+        ),
         "primary": True,
     },
     "sd": {
         "label": "Video ligero",
         "sub": "MP4, menor calidad",
-        "selector": "b[height<=480][ext=mp4]/wv*[ext=mp4]+wa/w" if HAS_FFMPEG else "b[height<=480]/w",
+        "selector": (
+            f"b{NO_WATERMARK}[height<=480][ext=mp4]/wv*{NO_WATERMARK}[ext=mp4]+wa/w{NO_WATERMARK}/w"
+            if HAS_FFMPEG
+            else f"b{NO_WATERMARK}[height<=480]/w{NO_WATERMARK}/w"
+        ),
     },
     "audio": {
         "label": "Solo audio",
@@ -83,10 +88,7 @@ def get_info(url: str) -> dict:
 
 
 def download(url: str, format_id: str) -> tuple[Path, Path]:
-    """Descarga a una carpeta temporal.
-
-    Regresa (archivo, carpeta). Quien llame se encarga de borrar la carpeta.
-    """
+    """Descarga a una carpeta temporal. Regresa (archivo, carpeta)."""
     if format_id not in FORMATS:
         raise DownloadError("Ese formato no existe.")
 

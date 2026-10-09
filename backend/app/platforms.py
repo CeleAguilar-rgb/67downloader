@@ -1,8 +1,4 @@
-"""Detección de plataforma a partir de un link.
-
-Es la misma lógica que tiene el frontend, pero aquí sirve para validar:
-nunca confíes en lo que manda el navegador.
-"""
+"""Detecta la plataforma de un link. Valida en el server: nunca confíes en el navegador."""
 import re
 from urllib.parse import urlparse
 
