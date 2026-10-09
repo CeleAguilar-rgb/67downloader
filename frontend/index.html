@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>67downloader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  /* ========== Tokens de diseño ========== */
+  :root {
+    --bg: #F2F0FF;
+    --ink: #1B1340;
+    --ink-soft: #5B5480;
+    --pink: #FF4FA3;
+    --cobalt: #3D5AFE;
+    --ok: #00A673;
+    --error: #D92D4B;
+    --surface: #FFFFFF;
+    --line: #1B1340;
+    --numeral: #E2DCFF;
+    --font: "Bricolage Grotesque", "Segoe UI", system-ui, -apple-system, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15102E;
+      --ink: #F2F0FF;
+      --ink-soft: #A9A2CF;
+      --surface: #211A45;
+      --line: #F2F0FF;
+      --numeral: #241C4E;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15102E;
+    --ink: #F2F0FF;
+    --ink-soft: #A9A2CF;
+    --surface: #211A45;
+    --line: #F2F0FF;
+    --numeral: #241C4E;
+  }
+
+  *, *::before, *::after { box-sizing: inherit; }
+  html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 1.0625rem;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  main {
+    position: relative;
+    max-width: 38rem;
+    margin: 0 auto;
+    padding: 3rem 1.25rem 4rem;
+  }
+
+  /* ========== Hero: el 67 gigante ========== */
+  .numeral {
+    position: absolute;
+    top: -1.5rem;
+    left: 50%;
+    transform: translateX(-50%) rotate(-6deg);
+    font-size: clamp(14rem, 55vw, 24rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.06em;
+    color: var(--numeral);
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
+  }
+  .hero { position: relative; z-index: 1; padding-top: 3.5rem; }
+  .hero-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  /* ========== El gato haciendo 67 ========== */
+  .cat {
+    width: clamp(8rem, 34vw, 11rem);
+    height: auto;
+    flex-shrink: 0;
+    overflow: visible;
+  }
+  .cat .arm, .cat .head, .cat .tail { transform-box: view-box; }
+  .cat .arm-left {
+    transform-origin: 74px 140px;
+    animation: arm-left 0.7s ease-in-out infinite;
+  }
+  .cat .arm-right {
+    transform-origin: 126px 140px;
+    animation: arm-right 0.7s ease-in-out infinite;
+  }
+  @keyframes arm-left {
+    0%, 100% { transform: rotate(16deg); }
+    50% { transform: rotate(-10deg); }
+  }
+  @keyframes arm-right {
+    0%, 100% { transform: rotate(10deg); }
+    50% { transform: rotate(-16deg); }
+  }
+  .cat .head {
+    transform-origin: 100px 120px;
+    animation: head-bob 0.7s ease-in-out infinite;
+  }
+  @keyframes head-bob {
+    0%, 100% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
+  }
+  .cat .tail {
+    transform-origin: 136px 182px;
+    animation: tail 1.4s ease-in-out infinite;
+  }
+  @keyframes tail {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-14deg); }
+  }
+  .cat .sparkle {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: twinkle 1.6s ease-in-out infinite;
+  }
+  .cat .sparkle.s2 { animation-delay: 0.8s; }
+  @keyframes twinkle {
+    0%, 100% { transform: scale(0.6); opacity: 0.4; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+  .cat .num {
+    font-family: var(--font);
+    font-weight: 800;
+    font-size: 17px;
+    fill: #fff;
+    text-anchor: middle;
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(2.5rem, 9vw, 3.75rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+  .tagline {
+    margin: 0.75rem 0 2rem;
+    color: var(--ink-soft);
+    max-width: 30rem;
+  }
+
+  /* ========== Caja del link ========== */
+  .dropzone {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border: 3px solid var(--line);
+    border-radius: 1.25rem;
+    box-shadow: 6px 6px 0 var(--pink);
+    padding: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    transition: box-shadow 0.2s ease;
+  }
+  .dropzone.has-platform { box-shadow: 6px 6px 0 var(--platform-color, var(--pink)); }
+  .dropzone input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 1.05rem;
+    padding: 0.75rem 0.75rem;
+    outline: none;
+  }
+  .dropzone input::placeholder { color: var(--ink-soft); }
+  .dropzone:focus-within { outline: 3px solid var(--cobalt); outline-offset: 4px; }
+
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: 0;
+  }
+  button:focus-visible { outline: 3px solid var(--cobalt); outline-offset: 3px; }
+
+  .btn-paste {
+    background: transparent;
+    color: var(--ink-soft);
+    font-weight: 600;
+    padding: 0 0.75rem;
+    border-radius: 0.75rem;
+  }
+  .btn-paste:hover { color: var(--ink); }
+
+  .btn-go {
+    background: var(--ink);
+    color: var(--bg);
+    font-weight: 800;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.85rem;
+    white-space: nowrap;
+  }
+  .btn-go:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-go:not(:disabled):active { transform: translateY(1px); }
+
+  /* ========== Plataformas soportadas ========== */
+  .platforms {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding: 0;
+    list-style: none;
+  }
+  .platforms li {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.8rem;
+    border: 2px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0.45;
+    transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
+  }
+  .platforms li .dot {
+    width: 0.6rem; height: 0.6rem; border-radius: 50%;
+    background: var(--c);
+  }
+  .platforms.idle li { opacity: 1; }
+  .platforms li.active {
+    opacity: 1;
+    background: var(--c);
+    border-color: var(--c);
+    color: #fff;
+  }
+  .platforms li.active .dot { background: #fff; }
+
+  .hint {
+    position: relative; z-index: 1;
+    min-height: 1.5rem;
+    margin: 0.75rem 0 0;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+  .hint.error { color: var(--error); font-weight: 600; }
+
+  /* ========== Resultado ========== */
+  .result {
+    position: relative; z-index: 1;
+    margin-top: 2rem;
+    background: var(--surface);
+    border: 3px solid var(--line);
+    border-radius: 1.25rem;
+    overflow: hidden;
+  }
+  .result[hidden] { display: none; }
+  .thumb {
+    aspect-ratio: 9 / 16;
+    max-height: 22rem;
+    width: 100%;
+    background:
+      repeating-linear-gradient(135deg, transparent 0 14px, rgba(255,255,255,0.12) 14px 28px),
+      var(--platform-color, var(--cobalt));
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.1rem;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .result-body { padding: 1.25rem; }
+  .result-body h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+  }
+  .meta { margin: 0 0 1.25rem; color: var(--ink-soft); font-size: 0.95rem; }
+  .options { display: grid; gap: 0.6rem; }
+  .option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.9rem 1rem;
+    border: 2px solid var(--line);
+    border-radius: 0.9rem;
+    background: transparent;
+    color: var(--ink);
+  }
+  .option:hover { background: var(--bg); }
+  .option.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .option.primary:hover { opacity: 0.9; }
+  .option strong { display: block; font-weight: 800; }
+  .option span.sub { font-size: 0.875rem; opacity: 0.75; }
+  .option .size { font-weight: 600; white-space: nowrap; font-size: 0.9rem; }
+
+  /* ========== Cargando ========== */
+  .loading {
+    position: relative; z-index: 1;
+    margin-top: 2rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .loading[hidden] { display: none; }
+  .spinner {
+    width: 1.5rem; height: 1.5rem;
+    border: 3px solid var(--numeral);
+    border-top-color: var(--pink);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    transform: translate(-50%, 150%);
+    background: var(--ok);
+    color: #fff;
+    font-weight: 700;
+    padding: 0.75rem 1.25rem;
+    border-radius: 999px;
+    transition: transform 0.3s ease;
+    z-index: 10;
+    max-width: calc(100% - 2rem);
+  }
+  .toast.show { transform: translate(-50%, 0); }
+
+  footer {
+    position: relative; z-index: 1;
+    margin-top: 3rem;
+    font-size: 0.875rem;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 30rem) {
+    .dropzone { flex-wrap: wrap; }
+    .dropzone input { flex-basis: 100%; }
+    .btn-paste { flex: 1; padding: 0.6rem; }
+    .btn-go { flex: 2; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="numeral" aria-hidden="true">67</div>
+
+  <section class="hero">
+    <div class="hero-top">
+      <h1>67downloader</h1>
+
+      <svg class="cat" viewBox="0 0 200 210" role="img" aria-label="Gato haciendo el 6 7 con las patas">
+        <!-- Sombra -->
+        <ellipse cx="100" cy="198" rx="54" ry="6" fill="var(--line)" opacity="0.12"/>
+
+        <!-- Destellos -->
+        <path class="sparkle" d="M36 44 Q38 52 46 54 Q38 56 36 64 Q34 56 26 54 Q34 52 36 44 Z" fill="#FF4FA3"/>
+        <path class="sparkle s2" d="M170 40 Q171.5 46 178 47.5 Q171.5 49 170 55 Q168.5 49 162 47.5 Q168.5 46 170 40 Z" fill="#3D5AFE"/>
+
+        <!-- Cola -->
+        <g class="tail">
+          <path d="M136 182 C 172 184, 186 152, 172 126 C 166 116, 156 120, 162 130" fill="none" stroke="#1B1340" stroke-width="15" stroke-linecap="round"/>
+          <path d="M136 182 C 172 184, 186 152, 172 126 C 166 116, 156 120, 162 130" fill="none" stroke="#FFB347" stroke-width="8" stroke-linecap="round"/>
+        </g>
+
+        <!-- Cuerpo -->
+        <path d="M62 186 C 54 152 70 120 100 120 C 130 120 146 152 138 186 Q 100 194 62 186 Z" fill="#FFB347" stroke="#1B1340" stroke-width="4" stroke-linejoin="round"/>
+        <ellipse cx="100" cy="163" rx="23" ry="22" fill="#FFF1DC"/>
+        <path d="M66 152 q7 1 11 -3 M64 164 q7 1 11 -3 M134 152 q-7 1 -11 -3 M136 164 q-7 1 -11 -3" fill="none" stroke="#E8891C" stroke-width="3.5" stroke-linecap="round"/>
+
+        <!-- Patitas de abajo -->
+        <ellipse cx="82" cy="188" rx="13" ry="7" fill="#FFF1DC" stroke="#1B1340" stroke-width="3.5"/>
+        <ellipse cx="118" cy="188" rx="13" ry="7" fill="#FFF1DC" stroke="#1B1340" stroke-width="3.5"/>
+        <path d="M78 185 v5 M86 185 v5 M114 185 v5 M122 185 v5" stroke="#1B1340" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- Brazo izquierdo: el 6 -->
+        <g class="arm arm-left">
+          <line x1="74" y1="140" x2="42" y2="120" stroke="#1B1340" stroke-width="18" stroke-linecap="round"/>
+          <line x1="74" y1="140" x2="42" y2="120" stroke="#FFB347" stroke-width="10" stroke-linecap="round"/>
+          <ellipse cx="34" cy="115" rx="14" ry="9" fill="#FFF1DC" stroke="#1B1340" stroke-width="3.5"/>
+          <ellipse cx="34" cy="117.5" rx="5" ry="3.5" fill="#FF7BB5"/>
+          <circle cx="25.5" cy="112" r="2.4" fill="#FF7BB5"/>
+          <circle cx="34" cy="109.5" r="2.4" fill="#FF7BB5"/>
+          <circle cx="42.5" cy="112" r="2.4" fill="#FF7BB5"/>
+          <rect x="22" y="76" width="24" height="24" rx="8" fill="#FF4FA3" stroke="#1B1340" stroke-width="3"/>
+          <text class="num" x="34" y="94">6</text>
+        </g>
+
+        <!-- Brazo derecho: el 7 -->
+        <g class="arm arm-right">
+          <line x1="126" y1="140" x2="158" y2="120" stroke="#1B1340" stroke-width="18" stroke-linecap="round"/>
+          <line x1="126" y1="140" x2="158" y2="120" stroke="#FFB347" stroke-width="10" stroke-linecap="round"/>
+          <ellipse cx="166" cy="115" rx="14" ry="9" fill="#FFF1DC" stroke="#1B1340" stroke-width="3.5"/>
+          <ellipse cx="166" cy="117.5" rx="5" ry="3.5" fill="#FF7BB5"/>
+          <circle cx="157.5" cy="112" r="2.4" fill="#FF7BB5"/>
+          <circle cx="166" cy="109.5" r="2.4" fill="#FF7BB5"/>
+          <circle cx="174.5" cy="112" r="2.4" fill="#FF7BB5"/>
+          <rect x="154" y="76" width="24" height="24" rx="8" fill="#3D5AFE" stroke="#1B1340" stroke-width="3"/>
+          <text class="num" x="166" y="94">7</text>
+        </g>
+
+        <!-- Cabeza -->
+        <g class="head">
+          <!-- Orejas -->
+          <path d="M64 68 Q 56 32 64 26 Q 74 26 94 50 Z" fill="#FFB347" stroke="#1B1340" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M136 68 Q 144 32 136 26 Q 126 26 106 50 Z" fill="#FFB347" stroke="#1B1340" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M70 58 Q 66 40 70 36 Q 77 38 86 50 Z" fill="#FF8FC4"/>
+          <path d="M130 58 Q 134 40 130 36 Q 123 38 114 50 Z" fill="#FF8FC4"/>
+
+          <ellipse cx="100" cy="84" rx="44" ry="38" fill="#FFB347" stroke="#1B1340" stroke-width="4"/>
+          <path d="M100 48 v12 M89 50 l2.5 9 M111 50 l-2.5 9" stroke="#E8891C" stroke-width="4" stroke-linecap="round"/>
+
+          <!-- Hocico -->
+          <circle cx="92.5" cy="100" r="9.5" fill="#FFF1DC"/>
+          <circle cx="107.5" cy="100" r="9.5" fill="#FFF1DC"/>
+
+          <!-- Ojos -->
+          <ellipse cx="81" cy="83" rx="7.5" ry="9" fill="#1B1340"/>
+          <ellipse cx="119" cy="83" rx="7.5" ry="9" fill="#1B1340"/>
+          <circle cx="84" cy="79" r="2.8" fill="#fff"/>
+          <circle cx="78.5" cy="87" r="1.4" fill="#fff"/>
+          <circle cx="122" cy="79" r="2.8" fill="#fff"/>
+          <circle cx="116.5" cy="87" r="1.4" fill="#fff"/>
+
+          <!-- Nariz y boca -->
+          <path d="M95.5 94 Q 100 91.5 104.5 94 Q 102.5 98 100 99 Q 97.5 98 95.5 94 Z" fill="#FF6FA8"/>
+          <path d="M94 103 Q 100 114 106 103 Q 100 106 94 103 Z" fill="#8A2448" stroke="#1B1340" stroke-width="2" stroke-linejoin="round"/>
+          <ellipse cx="100" cy="108.5" rx="3" ry="2" fill="#FF8FC4"/>
+
+          <!-- Cachetes -->
+          <ellipse cx="68" cy="98" rx="7" ry="4.5" fill="#FF8FC4" opacity="0.6"/>
+          <ellipse cx="132" cy="98" rx="7" ry="4.5" fill="#FF8FC4" opacity="0.6"/>
+
+          <!-- Bigotes -->
+          <path d="M44 92 L64 96 M44 102 L64 101 M156 92 L136 96 M156 102 L136 101" stroke="#1B1340" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </div>
+    <p class="tagline">Pega el link del video y bájalo sin marca de agua. Un solo lugar para todas las redes.</p>
+
+    <div class="dropzone" id="dropzone">
+      <label for="url" class="visually-hidden" style="position:absolute;left:-9999px">Link del video</label>
+      <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="https://www.tiktok.com/@alguien/video/…">
+      <button class="btn-paste" id="paste" type="button">Pegar</button>
+      <button class="btn-go" id="go" type="button" disabled>Descargar</button>
+    </div>
+
+    <ul class="platforms idle" id="platforms">
+      <li data-p="tiktok" style="--c:#FF2D6F"><span class="dot"></span>TikTok</li>
+      <li data-p="instagram" style="--c:#C13584"><span class="dot"></span>Instagram</li>
+      <li data-p="twitter" style="--c:#3D5AFE"><span class="dot"></span>X / Twitter</li>
+      <li data-p="facebook" style="--c:#1F6FEB"><span class="dot"></span>Facebook</li>
+      <li data-p="youtube" style="--c:#E62117"><span class="dot"></span>YouTube</li>
+    </ul>
+
+    <p class="hint" id="hint" aria-live="polite"></p>
+  </section>
+
+  <div class="loading" id="loading" hidden>
+    <div class="spinner"></div>
+    <span>Buscando el video…</span>
+  </div>
+
+  <article class="result" id="result" hidden>
+    <div class="thumb" id="thumb">Vista previa</div>
+    <div class="result-body">
+      <h2 id="r-title"></h2>
+      <p class="meta" id="r-meta"></p>
+      <div class="options" id="r-options"></div>
+    </div>
+  </article>
+
+  <footer>Para uso personal.</footer>
+</main>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* =========================================================
+   1. Detección de plataforma
+   Cada plataforma tiene un patrón para reconocer sus links.
+   ========================================================= */
+const PLATFORMS = {
+  tiktok: {
+    name: "TikTok",
+    color: "#FF2D6F",
+    pattern: /(^|\.)tiktok\.com\//i
+  },
+  instagram: {
+    name: "Instagram",
+    color: "#C13584",
+    pattern: /(^|\.)instagram\.com\/(p|reel|reels|tv)\//i
+  },
+  twitter: {
+    name: "X / Twitter",
+    color: "#3D5AFE",
+    pattern: /(^|\.)(twitter|x)\.com\/.+\/status\/\d+/i
+  },
+  facebook: {
+    name: "Facebook",
+    color: "#1F6FEB",
+    pattern: /((^|\.)facebook\.com\/|(^|\.)fb\.watch\/)/i
+  },
+  youtube: {
+    name: "YouTube",
+    color: "#E62117",
+    // Videos normales, Shorts, directos y links cortos de youtu.be
+    pattern: /((^|\.)youtube\.com\/(watch|shorts\/|live\/)|(^|\.)youtu\.be\/)/i
+  }
+};
+
+function detectPlatform(text) {
+  let url;
+  try {
+    url = new URL(text.trim());
+  } catch {
+    return null; // No es un link válido todavía
+  }
+  const target = url.hostname + url.pathname;
+  for (const [key, p] of Object.entries(PLATFORMS)) {
+    if (p.pattern.test(target)) return key;
+  }
+  return "unknown";
+}
+
+/* =========================================================
+   2. Conexión con el backend
+   ========================================================= */
+async function fetchVideoInfo(url) {
+  const res = await fetch("/api/info", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    // El backend manda el mensaje de error en "detail"
+    throw new Error(data.detail || "No se pudo obtener el video.");
+  }
+  return data;
+}
+
+function downloadUrl(url, formatId) {
+  const params = new URLSearchParams({ url, format: formatId });
+  return `/api/download?${params}`;
+}
+
+/* =========================================================
+   3. Interfaz
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const input = $("url");
+const goBtn = $("go");
+const hint = $("hint");
+const dropzone = $("dropzone");
+const chips = $("platforms");
+const loading = $("loading");
+const result = $("result");
+
+let currentPlatform = null;
+
+function updateDetection() {
+  const value = input.value;
+  const platform = detectPlatform(value);
+  currentPlatform = platform;
+
+  chips.classList.toggle("idle", !value.trim());
+  chips.querySelectorAll("li").forEach(li => {
+    li.classList.toggle("active", li.dataset.p === platform);
+  });
+
+  hint.classList.remove("error");
+  if (!value.trim()) {
+    hint.textContent = "";
+    dropzone.classList.remove("has-platform");
+    goBtn.disabled = true;
+    return;
+  }
+
+  if (platform && platform !== "unknown") {
+    const p = PLATFORMS[platform];
+    dropzone.style.setProperty("--platform-color", p.color);
+    dropzone.classList.add("has-platform");
+    hint.textContent = `Link de ${p.name} detectado.`;
+    goBtn.disabled = false;
+  } else {
+    dropzone.classList.remove("has-platform");
+    goBtn.disabled = true;
+    hint.textContent = platform === "unknown"
+      ? "Ese link no es de TikTok, Instagram, X, Facebook o YouTube."
+      : "Pega el link completo, empezando con https://";
+    if (platform === "unknown") hint.classList.add("error");
+  }
+}
+
+async function handleDownload() {
+  if (!currentPlatform || currentPlatform === "unknown") return;
+  result.hidden = true;
+  loading.hidden = false;
+  goBtn.disabled = true;
+
+  try {
+    const info = await fetchVideoInfo(input.value.trim());
+    renderResult(info);
+  } catch (err) {
+    hint.textContent = err.message || "No se pudo obtener el video. Revisa que el link sea público e inténtalo otra vez.";
+    hint.classList.add("error");
+  } finally {
+    loading.hidden = true;
+    goBtn.disabled = false;
+  }
+}
+
+function renderResult(info) {
+  const p = PLATFORMS[info.platform];
+  result.style.setProperty("--platform-color", p.color);
+  const thumb = $("thumb");
+  thumb.textContent = p.name;
+  if (info.thumbnail) {
+    const img = document.createElement("img");
+    img.src = info.thumbnail;
+    img.alt = "";
+    img.referrerPolicy = "no-referrer";
+    // Si la red bloquea la miniatura, se queda el bloque de color
+    img.onload = () => { thumb.textContent = ""; thumb.appendChild(img); };
+  }
+  $("r-title").textContent = info.title;
+  $("r-meta").textContent = [info.author, info.duration].filter(Boolean).join(", ");
+
+  const options = $("r-options");
+  options.innerHTML = "";
+  info.formats.forEach(f => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "option" + (f.primary ? " primary" : "");
+    btn.innerHTML = `<span><strong>${f.label}</strong><span class="sub">${f.sub}</span></span><span class="size">↓</span>`;
+    btn.addEventListener("click", () => {
+      // Un link normal hace que el navegador baje el archivo solito
+      const a = document.createElement("a");
+      a.href = downloadUrl(input.value.trim(), f.id);
+      a.download = "";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast(`Preparando ${f.label.toLowerCase()}… puede tardar unos segundos`);
+    });
+    options.appendChild(btn);
+  });
+
+  result.hidden = false;
+  result.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+input.addEventListener("input", updateDetection);
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !goBtn.disabled) handleDownload();
+});
+goBtn.addEventListener("click", handleDownload);
+
+$("paste").addEventListener("click", async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    input.value = text;
+    updateDetection();
+    input.focus();
+  } catch {
+    hint.textContent = "Tu navegador no dejó leer el portapapeles. Pega el link con Ctrl+V.";
+    hint.classList.add("error");
+    input.focus();
+  }
+});
+</script>
+</body>
+</html>
