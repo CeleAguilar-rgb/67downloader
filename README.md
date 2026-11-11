@@ -16,7 +16,7 @@ Una sola página para bajar videos de TikTok (sin marca de agua), Instagram, X/T
         └── platforms.py  ← detecta de qué red es un link
 ```
 
-Flujo: la página manda el link a `POST /api/info` → el backend usa yt-dlp para sacar título, miniatura y opciones → al elegir una opción, el navegador abre `GET /api/download?url=...&format=hd|sd|audio` y el backend manda el archivo.
+Flujo: la página manda el link a `POST /api/info` → el backend usa yt-dlp para sacar título, miniatura y opciones → al elegir una opción, el navegador abre `GET /api/download?url=...&format=hd|sd|mp3|audio` (video siempre en `.mp4`; `mp3` y la conversión a mp4 necesitan ffmpeg) y el backend manda el archivo.
 
 ## Correrlo en tu compu
 
