@@ -48,6 +48,11 @@ Si algo deja de descargar, casi siempre se arregla con `pip install -U yt-dlp`.
 La página se puede instalar como app desde el navegador (Chrome/Edge: ícono de instalar en la barra o botón "Instalar app" al pie; Android: menú → Instalar app). Archivos en `frontend/`: `manifest.webmanifest`, `sw.js` (service worker; nunca toca `/api`) e `icons/`. El `<link rel="manifest">` lleva `crossorigin="use-credentials"` porque, con Basic Auth, si no el navegador pide el manifest sin contraseña y falla. Si cambias `style.css` o `app.js`, sube el `?v=` en `index.html` **y** en `SHELL` de `sw.js`.
 **Sin probar todavía en un navegador real**: solo se comprobó que el servidor sirve todos esos archivos.
 
+## Correrlo en local sin Render: `iniciar.bat` (funciona)
+
+Doble clic en [iniciar.bat](iniciar.bat) y se abre la app en su propia ventana (Edge/Chrome en modo app), con todo local: sin Render, sin contraseña y con tu IP de casa. La primera vez prepara solo lo que falte (Python 3.10+, dependencias en `%LOCALAPPDATA%\67downloader\venv`, ffmpeg; ofrece instalarlos con winget y crear un acceso directo en el escritorio); las siguientes abre al instante. Al cerrar la ventana el servidor se apaga solo. [actualizar.bat](actualizar.bat) actualiza yt-dlp cuando una red deje de descargar.
+Probado en esta compu: instalación desde cero, búsqueda, descarga MP4 y MP3 de un video de YouTube, y apagado al cerrar la ventana. **Sin probar:** el camino donde falta Python o ffmpeg (los instala winget), ni en otra compu. Ojo: el `python` de la Microsoft Store no cuenta como Python real; el script lo ignora.
+
 ## Versión de escritorio (.exe): no funciona en esta compu
 
 - `backend/desktop.py` levanta el servidor en 127.0.0.1:8067 y abre una ventana de Edge/Chrome en modo app. **Con Python sí funciona** (`python desktop.py` desde `backend/`).
