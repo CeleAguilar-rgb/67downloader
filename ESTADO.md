@@ -43,6 +43,17 @@ Si algo deja de descargar, casi siempre se arregla con `pip install -U yt-dlp`.
 - Para actualizar: commit + push a `main` y, si no se redespliega solo, "Manual Deploy" en el panel de Render.
 - El plan gratis se duerme tras 15 min sin visitas; la primera visita después tarda cerca de un minuto.
 
+## App instalable (PWA)
+
+La página se puede instalar como app desde el navegador (Chrome/Edge: ícono de instalar en la barra o botón "Instalar app" al pie; Android: menú → Instalar app). Archivos en `frontend/`: `manifest.webmanifest`, `sw.js` (service worker; nunca toca `/api`) e `icons/`. El `<link rel="manifest">` lleva `crossorigin="use-credentials"` porque, con Basic Auth, si no el navegador pide el manifest sin contraseña y falla. Si cambias `style.css` o `app.js`, sube el `?v=` en `index.html` **y** en `SHELL` de `sw.js`.
+**Sin probar todavía en un navegador real**: solo se comprobó que el servidor sirve todos esos archivos.
+
+## Versión de escritorio (.exe): no funciona en esta compu
+
+- `backend/desktop.py` levanta el servidor en 127.0.0.1:8067 y abre una ventana de Edge/Chrome en modo app. **Con Python sí funciona** (`python desktop.py` desde `backend/`).
+- `backend/build_desktop.py` lo empaqueta con PyInstaller (carpeta de ~490 MB con ffmpeg dentro; `pip install -r requirements-desktop.txt`). Compila bien, pero **Windows (Smart App Control) bloquea el .exe por no estar firmado**, así que no se pudo probar ya empaquetado. Solo funcionaría con una firma digital de pago o apagando Smart App Control (no recomendado).
+- La carpeta `backend/dist/` y `backend/build/` están en `.gitignore`; se pueden borrar.
+
 ## Cosas descartadas
 
 - **Vercel:** no sirve para este backend (sin ffmpeg, límites de tiempo y de tamaño de respuesta).
@@ -53,4 +64,5 @@ Si algo deja de descargar, casi siempre se arregla con `pip install -U yt-dlp`.
 - [ ] Probar descargas reales de TikTok, Instagram, X y Facebook en la URL de Render (y MP4/MP3 desde el navegador).
 - [ ] Revisar si YouTube/TikTok bloquean la IP de Render; si pasa, hay que revisar el mensaje de error y valorar cookies (`COOKIES_FILE`) u otro host.
 - [ ] Confirmar si Render redespliega solo al hacer push.
+- [ ] Probar la instalación de la PWA en la URL de Render (PC y celular).
 - [ ] Historial de descargas recientes (idea del README original).

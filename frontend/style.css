@@ -501,6 +501,16 @@ footer {
   color: var(--ink-soft);
 }
 
+.install-btn {
+  margin-left: 0.5rem;
+  min-height: 2.75rem; padding: 0 1rem;
+  font: inherit; font-weight: 600;
+  color: var(--ink); background: var(--surface);
+  border: 2px solid var(--line); border-radius: 0.75rem;
+  cursor: pointer;
+}
+.install-btn[hidden] { display: none; }
+
 /* ========== Escritorio ========== */
 @media (min-width: 40rem) {
   .result { padding: 1.25rem; }

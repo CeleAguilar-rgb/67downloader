@@ -5,10 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>67downloader</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<!-- use-credentials: con Basic Auth el navegador no manda la contraseña al manifest si no -->
+<link rel="manifest" href="manifest.webmanifest" crossorigin="use-credentials">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#1B1340">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="67downloader">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 <main>
@@ -156,11 +163,14 @@
     <p class="history-note">Solo se guarda en este navegador.</p>
   </section>
 
-  <footer>Para uso personal.</footer>
+  <footer>
+    Para uso personal.
+    <button type="button" class="install-btn" id="install" hidden>Instalar app</button>
+  </footer>
 </main>
 
 <div class="toast" id="toast" role="status"></div>
 
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

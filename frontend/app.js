@@ -414,3 +414,28 @@ $("paste").addEventListener("click", async () => {
     input.focus();
   }
 });
+
+/* =========================================================
+   PWA: service worker y botón "Instalar app"
+   ========================================================= */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+
+let installPrompt = null;
+const installBtn = document.getElementById("install");
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  installPrompt = e;
+  installBtn.hidden = false;
+});
+installBtn.addEventListener("click", async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt = null;
+  installBtn.hidden = true;
+});
+window.addEventListener("appinstalled", () => { installBtn.hidden = true; });

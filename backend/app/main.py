@@ -3,6 +3,7 @@ import base64
 import os
 import secrets
 import shutil
+import sys
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request
@@ -18,7 +19,11 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from .downloader import DownloadError, download, get_info
 from .platforms import detect_platform
 
-FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+# En el .exe de PyInstaller el frontend viaja dentro del paquete (_MEIPASS)
+if getattr(sys, "frozen", False):
+    FRONTEND_DIR = Path(sys._MEIPASS) / "frontend"
+else:
+    FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
 limiter = Limiter(key_func=get_remote_address)
 

@@ -6,3 +6,6 @@ venv/
 cookies.txt
 *.mp4
 *.m4a
+backend/build/
+backend/dist/
+*.spec
