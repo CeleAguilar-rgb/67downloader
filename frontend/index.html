@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 <main>
@@ -108,10 +108,15 @@
     <p class="tagline">Pega el link del video y bájalo sin marca de agua. Un solo lugar para todas las redes.</p>
 
     <div class="dropzone" id="dropzone">
-      <label for="url" class="visually-hidden" style="position:absolute;left:-9999px">Link del video</label>
-      <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="https://www.tiktok.com/@alguien/video/…">
+      <label for="url" class="visually-hidden">Link del video</label>
+      <div class="field">
+        <input id="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" placeholder="Pega aquí el link del video">
+        <button class="btn-clear" id="clear" type="button" aria-label="Borrar el link" hidden>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
       <button class="btn-paste" id="paste" type="button">Pegar</button>
-      <button class="btn-go" id="go" type="button" disabled>Descargar</button>
+      <button class="btn-go" id="go" type="button" disabled>Buscar video</button>
     </div>
 
     <ul class="platforms idle" id="platforms">
@@ -131,19 +136,31 @@
   </div>
 
   <article class="result" id="result" hidden>
-    <div class="thumb" id="thumb">Vista previa</div>
-    <div class="result-body">
-      <h2 id="r-title"></h2>
-      <p class="meta" id="r-meta"></p>
-      <div class="options" id="r-options"></div>
-    </div>
+    <header class="result-head">
+      <div class="thumb" id="thumb"></div>
+      <div class="result-text">
+        <h2 id="r-title"></h2>
+        <p class="meta" id="r-meta"></p>
+      </div>
+    </header>
+    <div class="options" id="r-options"></div>
+    <p class="result-error" id="r-error" role="alert" hidden></p>
   </article>
+
+  <section class="history" id="history" aria-labelledby="history-title" hidden>
+    <div class="history-head">
+      <h2 id="history-title">Descargas recientes</h2>
+      <button class="btn-link" id="history-clear" type="button">Borrar historial</button>
+    </div>
+    <ul class="history-list" id="history-list"></ul>
+    <p class="history-note">Solo se guarda en este navegador.</p>
+  </section>
 
   <footer>Para uso personal.</footer>
 </main>
 
 <div class="toast" id="toast" role="status"></div>
 
-<script src="app.js"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

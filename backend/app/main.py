@@ -109,5 +109,15 @@ async def download_file(
     return FileResponse(file_path, filename=file_path.name)
 
 
+class FrontendFiles(StaticFiles):
+    """Pide al navegador revalidar siempre, para que tras un despliegue
+    nadie se quede con el HTML/CSS/JS viejo (responde 304 si no cambió)."""
+
+    def file_response(self, *args, **kwargs):
+        response = super().file_response(*args, **kwargs)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 # Va al final para no tapar las rutas de /api
-app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+app.mount("/", FrontendFiles(directory=FRONTEND_DIR, html=True), name="frontend")

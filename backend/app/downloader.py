@@ -104,6 +104,17 @@ def get_info(url: str) -> dict:
     try:
         with yt_dlp.YoutubeDL(_base_opts()) as ydl:
             info = ydl.extract_info(url, download=False)
+            formats = []
+            for key, f in _available_formats().items():
+                size, approx = _estimate_size(ydl, info, f)
+                formats.append({
+                    "id": key,
+                    "label": f["label"],
+                    "sub": f["sub"],
+                    "primary": f.get("primary", False),
+                    "size": size,
+                    "approx": approx,
+                })
     except yt_dlp.utils.DownloadError as e:
         raise DownloadError(
             "No se pudo leer ese video. Revisa que sea público o inténtalo en un rato."
@@ -114,11 +125,53 @@ def get_info(url: str) -> dict:
         "author": info.get("uploader") or info.get("channel") or "",
         "duration": _format_duration(info.get("duration")),
         "thumbnail": info.get("thumbnail"),
-        "formats": [
-            {"id": key, "label": f["label"], "sub": f["sub"], "primary": f.get("primary", False)}
-            for key, f in _available_formats().items()
-        ],
+        "formats": formats,
     }
+
+
+def _stream_size(f: dict, duration) -> tuple[int | None, bool]:
+    """Peso de un formato de yt-dlp: exacto si lo da la red, si no estimado."""
+    if f.get("filesize"):
+        return int(f["filesize"]), False
+    if f.get("filesize_approx"):
+        return int(f["filesize_approx"]), True
+    if f.get("tbr") and duration:
+        return int(f["tbr"] * 1000 / 8 * duration), True
+    return None, True
+
+
+def _estimate_size(ydl, info: dict, fmt: dict) -> tuple[int | None, bool]:
+    """Cuánto pesará el archivo de esta opción, sin descargar nada.
+
+    Regresa (bytes, aproximado). bytes es None si no hay forma de saberlo.
+    """
+    duration = info.get("duration")
+    if fmt["kind"] == "mp3":
+        # Se convierte a 192 kbps, así que depende solo de la duración
+        return (int(duration * 192_000 / 8), True) if duration else (None, True)
+
+    try:
+        # Usa el mismo selector que la descarga para escoger el formato real
+        chosen = ydl._select_formats(info.get("formats") or [], ydl.build_format_selector(fmt["selector"]))
+    except Exception:
+        return None, True
+    if not chosen:
+        return None, True
+    choice = chosen[0]
+
+    total, approx = 0, False
+    for part in choice.get("requested_formats") or [choice]:
+        size, part_approx = _stream_size(part, duration)
+        if size is None:
+            return None, True
+        total += size
+        approx = approx or part_approx
+    if fmt["kind"] == "video":
+        vcodec = (choice.get("vcodec") or "").lower()
+        # Si no viene en H.264 se recodifica y el peso cambia
+        if not vcodec.startswith(("avc1", "h264")):
+            approx = True
+    return total, approx
 
 
 def download(url: str, format_id: str) -> tuple[Path, Path]:
