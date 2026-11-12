@@ -16,6 +16,7 @@ Pegas un link de TikTok, Instagram, X, Facebook o YouTube y baja el video. Opcio
 Lo último que se cambió ([backend/app/downloader.py](backend/app/downloader.py)):
 - Antes, si la red no daba mp4, el archivo salía en webm/mkv. Ahora el selector prefiere mp4 y, si no hay, ffmpeg lo convierte a `.mp4` al final (`FFmpegVideoConvertor`).
 - Se agregó MP3 con `FFmpegExtractAudio`. Sin ffmpeg esa opción se oculta.
+- Algunos videos (Instagram sobre todo) venían en `.mp4` pero con VP9 adentro, y Premiere/CapCut los rechazaban. Ahora, al terminar, se revisa el codec con ffprobe y si no es H.264 + AAC se recodifica (`_ensure_h264`). Los selectores también prefieren `avc1` primero para no tener que recodificar.
 - Probado con un video de YouTube: HD salió `.mp4` (h264+aac) y MP3 salió `.mp3` válido. **No se ha probado con TikTok, Instagram, X ni Facebook.**
 
 ## Para correrlo en la otra compu

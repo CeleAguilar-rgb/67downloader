@@ -1,12 +1,15 @@
 """Todo lo que habla con yt-dlp vive aquí."""
 import os
 import shutil
+import subprocess
 import tempfile
 from pathlib import Path
 
 import yt_dlp
 
-HAS_FFMPEG = shutil.which("ffmpeg") is not None
+FFMPEG = shutil.which("ffmpeg")
+FFPROBE = shutil.which("ffprobe")
+HAS_FFMPEG = FFMPEG is not None and FFPROBE is not None
 
 # Cookies opcionales para contenido logueado. Ruta en COOKIES_FILE.
 COOKIES_FILE = os.getenv("COOKIES_FILE")
@@ -25,6 +28,7 @@ FORMATS = {
         # lo que haya y ffmpeg lo convierte a MP4 al final.
         "selector": (
             f"bv*{NO_WATERMARK}[vcodec^=avc1][ext=mp4]+ba[ext=m4a]"
+            f"/b{NO_WATERMARK}[vcodec^=avc1][ext=mp4]"
             f"/bv*{NO_WATERMARK}[ext=mp4]+ba[ext=m4a]"
             f"/b{NO_WATERMARK}[ext=mp4]"
             f"/bv*{NO_WATERMARK}+ba"
@@ -39,7 +43,9 @@ FORMATS = {
         "sub": "MP4, menor calidad",
         "kind": "video",
         "selector": (
-            f"b{NO_WATERMARK}[height<=480][ext=mp4]"
+            f"b{NO_WATERMARK}[height<=480][vcodec^=avc1][ext=mp4]"
+            f"/bv*{NO_WATERMARK}[height<=480][vcodec^=avc1]+ba[ext=m4a]"
+            f"/b{NO_WATERMARK}[height<=480][ext=mp4]"
             f"/wv*{NO_WATERMARK}[ext=mp4]+wa"
             f"/w{NO_WATERMARK}/w"
             if HAS_FFMPEG
@@ -151,4 +157,55 @@ def download(url: str, format_id: str) -> tuple[Path, Path]:
     ext = _output_ext(fmt["kind"])
     if ext:
         files.sort(key=lambda p: p.suffix.lower() != ext)
-    return files[0], tmp_dir
+    result = files[0]
+
+    if fmt["kind"] == "video" and HAS_FFMPEG:
+        try:
+            result = _ensure_h264(result)
+        except (subprocess.SubprocessError, OSError) as e:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+            raise DownloadError("No se pudo convertir el video. Inténtalo otra vez.") from e
+    return result, tmp_dir
+
+
+def _codec(path: Path, stream: str) -> str:
+    """Codec del primer stream de video ("v") o audio ("a"); "" si no hay."""
+    out = subprocess.run(
+        [
+            FFPROBE, "-v", "error", "-select_streams", f"{stream}:0",
+            "-show_entries", "stream=codec_name", "-of", "csv=p=0", str(path),
+        ],
+        capture_output=True, text=True, timeout=30, check=True,
+    )
+    return out.stdout.strip().lower()
+
+
+def _ensure_h264(path: Path) -> Path:
+    """Deja el MP4 en H.264 + AAC para que abra en editores (Premiere, CapCut...).
+
+    Algunas redes (Instagram, YouTube) sirven VP9 o AV1 dentro de un .mp4;
+    el archivo se reproduce, pero los editores lo rechazan. En ese caso se
+    recodifica. Si ya es H.264 no se toca.
+    """
+    vcodec = _codec(path, "v")
+    acodec = _codec(path, "a")
+    if vcodec == "h264" and acodec in ("aac", ""):
+        return path
+
+    out = path.with_name(path.stem + ".h264.mp4")
+    cmd = [FFMPEG, "-y", "-v", "error", "-i", str(path)]
+    if vcodec == "h264":
+        cmd += ["-c:v", "copy"]
+    else:
+        cmd += ["-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p"]
+    if acodec in ("aac", ""):
+        cmd += ["-c:a", "copy"]
+    else:
+        cmd += ["-c:a", "aac", "-b:a", "192k"]
+    cmd += ["-movflags", "+faststart", str(out)]
+    subprocess.run(cmd, capture_output=True, timeout=900, check=True)
+
+    path.unlink()
+    final = path.with_suffix(".mp4")
+    out.rename(final)
+    return final
